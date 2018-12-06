@@ -47,6 +47,36 @@ defmodule Aoc.Year2018.Day01.ChronalCalibration do
   Starting with a frequency of zero, *what is the resulting frequency* after all
   of the changes in frequency have been applied?
 
+  --- Part Two ---
+
+  You notice that the device repeats the same frequency change list over and
+  over. To calibrate the device, you need to find the first frequency it reaches
+  twice.
+
+  For example, using the same list of changes above, the device would loop as
+  follows:
+
+    Current frequency  0, change of +1; resulting frequency  1.
+    Current frequency  1, change of -2; resulting frequency -1.
+    Current frequency -1, change of +3; resulting frequency  2.
+    Current frequency  2, change of +1; resulting frequency  3.
+    (At this point, the device continues from the start of the list.)
+    Current frequency  3, change of +1; resulting frequency  4.
+    Current frequency  4, change of -2; resulting frequency  2, which has already been seen.
+
+  In this example, the first frequency reached twice is 2. Note that your device
+  might need to repeat its list of frequency changes many times before a
+  duplicate frequency is found, and that duplicates might be found while in the
+  middle of processing the list.
+
+  Here are other examples:
+
+    +1, -1 first reaches 0 twice.
+    +3, +3, +4, -2, -4 first reaches 10 twice.
+    -6, +3, +8, +5, -6 first reaches 5 twice.
+    +7, +7, -2, -7, -4 first reaches 14 twice.
+
+  What is the first frequency your device reaches twice?
 
   """
 
@@ -61,10 +91,49 @@ defmodule Aoc.Year2018.Day01.ChronalCalibration do
     |> Enum.reduce(fn x, acc -> x + acc end)
   end
 
+  defp check_frequency(%{input: input, accum: accum, frequencies: frequencies}, data)
+       when length(input) <= 0 do
+    check_frequency(
+      %{
+        input: data,
+        accum: accum,
+        frequencies: frequencies
+      },
+      data
+    )
+  end
+
+  defp check_frequency(%{input: [head | tail], accum: accum, frequencies: frequencies}, data) do
+    val = head + accum
+
+    with true <- Enum.member?(frequencies, val) do
+      {:done, val}
+    else
+      _ ->
+        check_frequency(
+          %{input: tail, accum: val, frequencies: Enum.into(frequencies, [val])},
+          data
+        )
+    end
+  end
+
   @doc """
 
   """
+
   def part_2(input) do
-    input
+    parsed_input =
+      input
+      |> String.replace("+", "")
+      |> String.split(["\n"])
+      |> Enum.map(&String.to_integer/1)
+
+    params = %{input: parsed_input, accum: 0, frequencies: []}
+
+    with {:done, val} <- check_frequency(params, parsed_input) do
+      val
+    else
+      current -> check_frequency(current, parsed_input)
+    end
   end
 end

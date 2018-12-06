@@ -20,7 +20,7 @@ defmodule Aoc.Year2018.Day01.ChronalCalibrationTest do
 
     @tag day: 01, year: 2018
     test "input", %{input: input} do
-      assert input |> ChronalCalibration.part_2() == input
+      assert input |> ChronalCalibration.part_2() == 81204
     end
   end
 end
