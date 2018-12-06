@@ -97,10 +97,83 @@ defmodule Aoc.Year2018.Day02.InventoryManagementSystem do
     end
   end
 
+  def check_for_matching_letters(comparable, current, i, num_wrong)
+    when length(comparable) < i and num_wrong <= 1 do
+      true
+  end
+
+  def check_for_matching_letters(comparable, current, i, num_wrong)
+    when length(comparable) < i do
+      false
+  end
+
+  def check_for_matching_letters(comparable, current, i, num_wrong) do
+    with val_comparable <- Enum.at(comparable, i),
+         val_current <- Enum.at(current, i),
+         true <- val_comparable === val_current,
+         true <- num_wrong <= 1 do
+
+           check_for_matching_letters(comparable, current, i + 1, num_wrong)
+    else
+      _ -> check_for_matching_letters(comparable, current, i + 1, num_wrong + 1)
+    end
+  end
+
+  def check_for_matching_strings(input) do
+    [head | tail] = input
+    head_array = String.graphemes(head)
+
+    matches = tail
+    |> Enum.filter(fn word ->
+      word_array = String.graphemes(word)
+      check_for_matching_letters(word_array, head_array, 0, 0)
+    end)
+
+    with true <- Enum.count(matches) > 0 do
+      {:done, Enum.into(matches, [head])}
+    else
+      _ -> check_for_matching_strings(tail)
+    end
+  end
+
+  def find_common_ids(input) do
+    with {:done, vals} <- check_for_matching_strings(input) do
+      vals
+    else
+      current -> check_for_matching_strings(current)
+    end
+  end
+
+  def remove_uncommon_letters(arr1, arr2) do
+    arr1
+    |> Enum.reduce({"", 0}, fn (x, a) ->
+
+      {acc, idx} = a
+
+      with true <- Enum.at(arr1, idx) === Enum.at(arr2, idx) do
+        {acc <> Enum.at(arr1, idx), idx + 1}
+      else
+        _ ->
+          {acc, idx + 1}
+      end
+    end)
+  end
+
+  def find_common_letters(matches) do
+    arr1 = Enum.at(matches, 0) |> String.graphemes
+    arr2 = Enum.at(matches, 1) |> String.graphemes
+
+    {word, _} = remove_uncommon_letters(arr1, arr2)
+    word
+  end
+
   @doc """
 
   """
   def part_2(input) do
     input
+    |> parse_input()
+    |> find_common_ids()
+    |> find_common_letters()
   end
 end

@@ -20,7 +20,7 @@ defmodule Aoc.Year2018.Day02.InventoryManagementSystemTest do
 
     @tag day: 02, year: 2018
     test "input", %{input: input} do
-      assert input |> InventoryManagementSystem.part_2() == input
+      assert input |> InventoryManagementSystem.part_2() == "jiwamotgsfrudclzbyzkhlrvp"
     end
   end
 end
