@@ -53,12 +53,7 @@ defmodule Aoc.Year2018.Day03.NoMatterHowYouSliceItTest do
 
     @tag day: 03, year: 2018
     test "input", %{input: input} do
-      assert input |> NoMatterHowYouSliceIt.part_2() == input
+      assert input |> NoMatterHowYouSliceIt.part_2() == "650"
     end
   end
-    # Store area value of each
-    # Store area value of each
-    # Store area value of each
-    # Store area value of each
-    # Store area value of each
 end

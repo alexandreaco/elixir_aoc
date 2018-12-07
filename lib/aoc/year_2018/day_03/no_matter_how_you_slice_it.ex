@@ -151,20 +151,59 @@ defmodule Aoc.Year2018.Day03.NoMatterHowYouSliceIt do
     |> Enum.count
   end
 
+  def find_single_use_tiles(fabric) do
+    fabric
+    |> Map.keys()
+    |> Enum.filter(fn {x,y} ->
+      with {:ok, arr} <- Map.fetch(fabric, {x,y}) do
+        Enum.count(arr) === 1
+      else
+        _ ->
+          false
+      end
+    end)
+    |> Enum.map(fn {x,y} ->
+      %{coord: {x,y}, val: Map.fetch!(fabric, {x,y})}
+    end)
+  end
+
+  def compute_tile_area(%{width: w, height: h}) do
+    w * h
+  end
+
+  def find_whole_areas(tiles, input) do
+    Enum.reduce_while(tiles, 0, fn %{coord: {x,y}, val: id}, acc ->
+      tile = Enum.filter(input, fn area_data ->
+        %{x: current_x, y: current_y} = area_data
+        x === current_x && y === current_y
+      end)
+
+      with true <- Enum.count(tile) > 0,
+           area <- compute_tile_area(Enum.at(tile, 0)),
+           num_occurrences <- Enum.filter(tiles, fn tile ->
+             %{val: val} = tile
+             Enum.at(val, 0) === Enum.at(id, 0)
+           end) |> Enum.count,
+           true <- area === num_occurrences do
+        {:halt, tile}
+      else
+        _ ->
+          {:cont, acc}
+      end
+    end)
+  end
+
   @doc """
 
   """
   def part_2(input) do
-    # x Store id in parse_input
-    # x When selecting tiles, store id of area that is used in each tile
-    # Compute answer...
-    # Get all tiles with only one id
-    # For each id, check to see if there are the same number of occurences in
-    # the single tiles array as width * height
-    # return the id that satisfies requirement
-    "#1 @ 1,3: 4x4\n#2 @ 3,1: 4x4\n#3 @ 5,5: 2x2"
-    |> parse_input
-    |> IO.inspect
-    input
+    fabric = build_fabric(1000)
+    areas = input |> parse_input
+
+    select_fabric_areas(fabric, areas)
+    |> find_single_use_tiles
+    |> find_whole_areas(areas)
+    |> Enum.at(0)
+    |> Map.get(:id)
   end
 end
