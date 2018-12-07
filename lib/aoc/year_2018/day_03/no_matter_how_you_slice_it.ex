@@ -65,14 +65,14 @@ defmodule Aoc.Year2018.Day03.NoMatterHowYouSliceIt do
   def build_fabric(size) do
     Enum.reduce(0..size, %{}, fn x, acc ->
       Enum.reduce(0..size, acc, fn y, acc ->
-        Map.put(acc, {x, y}, 0)
+        Map.put(acc, {x, y}, [])
       end)
     end)
   end
 
-  def select_fabric_area(fabric, x, y, width, height) do
+  def select_fabric_area(fabric, x, y, width, height, id) do
     tiles = compute_fabric_area_tiles(x, y, width, height)
-    select_fabric_tiles(fabric, tiles)
+    select_fabric_tiles(fabric, tiles, id)
   end
 
   def select_fabric_areas(fabric, areas) when length(areas) <= 0 do
@@ -80,19 +80,19 @@ defmodule Aoc.Year2018.Day03.NoMatterHowYouSliceIt do
   end
 
   def select_fabric_areas(fabric, areas) do
-    [%{x: x, y: y, width: width, height: height} | tail] = areas
+    [%{x: x, y: y, width: width, height: height, id: id} | tail] = areas
     tiles = compute_fabric_area_tiles(x, y, width, height)
-    select_fabric_tiles(fabric, tiles)
+    select_fabric_tiles(fabric, tiles, id)
     |> select_fabric_areas(tail)
   end
 
-  def select_fabric_tiles(fabric, tiles) do
+  def select_fabric_tiles(fabric, tiles, id) do
     with true <- Enum.count(tiles) >= 1 do
       [head | tail] = tiles
       {x,y} = head
       fabric
-      |> select_fabric_tile(x, y)
-      |> select_fabric_tiles(tail)
+      |> select_fabric_tile(x, y, id)
+      |> select_fabric_tiles(tail, id)
     else
       _ -> fabric
     end
@@ -108,9 +108,9 @@ defmodule Aoc.Year2018.Day03.NoMatterHowYouSliceIt do
     end)
   end
 
-  def select_fabric_tile(fabric, x, y) do
+  def select_fabric_tile(fabric, x, y, id) do
     with {:ok, val} <- Map.fetch(fabric, {x,y}) do
-      Map.put(fabric, {x,y}, val + 1)
+      Map.put(fabric, {x,y}, Enum.into(val, [id]))
     else
       _ ->
         :error
@@ -130,6 +130,7 @@ defmodule Aoc.Year2018.Day03.NoMatterHowYouSliceIt do
         |> Enum.at(3)
         |> String.split(["x"])
       %{
+        id: Enum.at(split_string, 0) |> String.replace("#", ""),
         x: Enum.at(coordinates, 0) |> String.to_integer,
         y: Enum.at(coordinates, 1) |> String.to_integer,
         width: Enum.at(size, 0) |> String.to_integer,
@@ -145,7 +146,7 @@ defmodule Aoc.Year2018.Day03.NoMatterHowYouSliceIt do
 
     select_fabric_areas(fabric, areas)
     |> Enum.filter(fn {_, val} ->
-      val > 1
+      Enum.count(val) > 1
     end)
     |> Enum.count
   end
@@ -154,6 +155,16 @@ defmodule Aoc.Year2018.Day03.NoMatterHowYouSliceIt do
 
   """
   def part_2(input) do
+    # x Store id in parse_input
+    # x When selecting tiles, store id of area that is used in each tile
+    # Compute answer...
+    # Get all tiles with only one id
+    # For each id, check to see if there are the same number of occurences in
+    # the single tiles array as width * height
+    # return the id that satisfies requirement
+    "#1 @ 1,3: 4x4\n#2 @ 3,1: 4x4\n#3 @ 5,5: 2x2"
+    |> parse_input
+    |> IO.inspect
     input
   end
 end
